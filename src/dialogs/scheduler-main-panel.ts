@@ -46,6 +46,7 @@ export class SchedulerMainPanel extends LitElement {
   @property({ attribute: false }) public viewMode!: EditorMode;
   @property({ attribute: false }) public selectedSlot: number | null = null;
   @property({ type: Boolean }) large = false;
+  @property({ attribute: false }) public defaultActionsByDomain!: Record<string, Action>; 
 
   @state() schedule!: Schedule;
   @state() selectedEntry: number | null = 0;
@@ -441,13 +442,20 @@ export class SchedulerMainPanel extends LitElement {
     filteredDomains = [...new Set(filteredDomains)];
     filteredEntities = [...new Set(filteredEntities)];
 
+    const slot = this.schedule.entries[this.selectedEntry!].slots[this.selectedSlot!];
+    const isEditing = slot.actions.length > 0;
+
     await new Promise<Action | null>(resolve => {
+
       const params: DialogSelectActionParams = {
         cancel: () => resolve(null),
         confirm: (out: Action) => resolve(out),
         domainFilter: filteredDomains.length ? filteredDomains : undefined,
         entityFilter: filteredEntities.length ? filteredEntities : undefined,
-        cardConfig: this.config
+        cardConfig: this.config,
+        defaultActionsByDomain: this.defaultActionsByDomain,
+        viewMode: this.viewMode,
+        isEditing: isEditing,
       };
 
       fireEvent(ev.target as HTMLElement, 'show-dialog', {
@@ -461,6 +469,9 @@ export class SchedulerMainPanel extends LitElement {
         const slot: Timeslot = { ...this.schedule.entries[this.selectedEntry!].slots[this.selectedSlot!] };
         const target = this.schedule.entries[this.selectedEntry!].slots.find(e => e.actions.length ? e.actions[0].target?.entity_id : undefined);
         let action = { ...res };
+
+
+
         if (target && action.target) action = { ...action, target: target.actions[0].target };
         this._updateSlot({ actions: [action] });
       });

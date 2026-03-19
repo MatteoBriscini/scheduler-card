@@ -1,7 +1,7 @@
 import { mdiArrowLeft, mdiClose, mdiCogOutline } from "@mdi/js";
 import { LitElement, PropertyValues, html } from "lit";
 import { customElement, property, state } from "lit/decorators";
-import { CardConfig, EditorMode, Schedule, ScheduleEntry } from "../types";
+import { Action, CardConfig, EditorMode, Schedule, ScheduleEntry } from "../types";
 import { EditorDialogStyles } from "../card.styles";
 import { localize } from "../localize/localize";
 import { HomeAssistant } from "../lib/types";
@@ -23,6 +23,8 @@ import './scheduler-main-panel';
 import './scheduler-options-panel';
 import './generic-dialog';
 import { defaultSingleTimerConfig, defaultTimeSchemeConfig } from "../const";
+import { entityHasDefaultAction, getDefaultActionForEntity, resolveDefaultActionsByDomain, resolveDefaultEntity } from "../data/default_actions";
+import { computeActionsForDomain } from "../data/actions/compute_actions_for_domain";
 
 export type SchedulerDialogParams = {
   schedule: Schedule,
@@ -45,6 +47,9 @@ export class DialogSchedulerEditor extends LitElement {
   @state() _panel: "main" | "options" = "main";
 
   @state() _viewMode: EditorMode = EditorMode.Single;
+  @state() private defaultActionsByDomain: Record<string, Action> = {}; 
+  @state() private defaultEntity?: string; 
+
   set viewMode(mode: EditorMode) {
     this._viewMode = mode;
 
@@ -62,6 +67,7 @@ export class DialogSchedulerEditor extends LitElement {
   public async showDialog(params: any): Promise<void> {
     this._params = params;
     this.schedule = params.schedule;
+
     this._panel = "main";
     this.large = false;
 
@@ -76,7 +82,69 @@ export class DialogSchedulerEditor extends LitElement {
       ? EditorMode.Scheme
       : this._params?.cardConfig.default_editor || EditorMode.Single;
 
+    this.defaultActionsByDomain =  resolveDefaultActionsByDomain(this.hass, params.cardConfig as CardConfig);
+    this.defaultEntity = resolveDefaultEntity(params.cardConfig as CardConfig);
+    this._preselectDefaultAction(params.cardConfig as CardConfig);
+
     await this.updateComplete;
+  }
+
+  private _preselectDefaultAction(cardConfig: CardConfig): void {
+    const includeEntities = cardConfig?.include;
+    let entityId: string | undefined;
+
+    const defaultEntity = this.defaultEntity;
+    const defaultActions = this.defaultActionsByDomain;
+
+    if (this._params?.editItem) {
+      // For existing schedules, use the schedule's entity_id
+      entityId = this.schedule.entity_id;
+    } else if (defaultEntity) {
+      // For new schedules, if a default_entity is configured and has a default action, preselect it
+      if (entityHasDefaultAction(defaultEntity, defaultActions)) {
+        entityId = defaultEntity;
+      }
+    }
+    if (entityId && this.schedule && this.schedule.entries && !this.schedule.entries.some(e => e.slots.some(s => s.actions.length))) {
+
+      let defaultAction = getDefaultActionForEntity(entityId, defaultActions);
+
+      // If no default action found for the entity, but there is a single action for the domain, use that
+      if (!defaultAction) {
+        const domain = entityId.split(".")[0];
+        const actions = computeActionsForDomain(this.hass, domain, cardConfig);
+        if (actions.length === 1) {
+          defaultAction = actions[0].action;
+        }
+      }
+
+      // If we have a default action, preselect it for the first slot of the schedule
+      if (defaultAction && this._viewMode === EditorMode.Single) {
+        let actionToSet = { ...defaultAction };
+          actionToSet = {
+          ...actionToSet,
+          target: { ...(actionToSet.target ?? {}), entity_id: entityId },
+        };
+
+        this.schedule = {
+          ...this.schedule,
+          entity_id: this.schedule.entity_id || entityId,
+          entries: this.schedule.entries.map((entry, entryIdx) => {
+            if (entryIdx !== 0) return entry;
+            return {
+              ...entry,
+              slots: entry.slots.map((slot, slotIdx) => {
+                // add default action
+                if (slotIdx === 1 && !slot.actions.length) {
+                  return { ...slot, actions: [actionToSet] };
+                }
+                return slot;
+              }),
+            };
+          }),
+        };
+      }
+    }
   }
 
   public async closeDialog() {
@@ -144,6 +212,7 @@ export class DialogSchedulerEditor extends LitElement {
             @setViewMode=${this._setViewMode}
             .viewMode=${this._viewMode}
             .selectedSlot=${this.selectedSlot}
+            .defaultActionsByDomain=${this.defaultActionsByDomain} 
           >
           </scheduler-main-panel>
             `

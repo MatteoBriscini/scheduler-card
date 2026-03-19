@@ -19,6 +19,9 @@ export interface CardConfig {
   tags?: string[] | string;
   exclude_tags?: string[] | string;
   show_add_button?: boolean;
+
+  default_entity?: string | number; 
+  default_actions?: Record<string, string | number>;
 }
 
 export enum EditorMode {
