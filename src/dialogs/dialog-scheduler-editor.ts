@@ -173,12 +173,14 @@ export class DialogSchedulerEditor extends LitElement {
             .label=${hassLocalize('ui.dialogs.more_info_control.dismiss', this.hass)}
             .path=${mdiClose}
           ></ha-icon-button>
+          ${!this._params.cardConfig.disable_options ? html`
           <ha-icon-button
             slot="actionItems"
             .label=""
             .path=${mdiCogOutline}
             @click=${() => { this._panel = "options" }}
           ></ha-icon-button>
+          ` : ''}
           `
         : html`
           <ha-icon-button

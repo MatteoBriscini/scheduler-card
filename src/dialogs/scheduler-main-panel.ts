@@ -73,6 +73,7 @@ export class SchedulerMainPanel extends LitElement {
           <ha-icon-button .path=${mdiPencil} @click=${(ev: Event) => this._showWeekdayDialog(ev, num)}></ha-icon-button>
         </div>
         <div class="weekdays-actions">
+        ${!this.config.disable_mode_switch ? html`
         <ha-button appearance="plain" size="small" @click=${this.toggleViewMode}>
           ${this.viewMode == EditorMode.Scheme
         ? localize('ui.panel.editor.toggle_single_mode', this.hass)
@@ -80,6 +81,7 @@ export class SchedulerMainPanel extends LitElement {
       }
           <ha-icon slot="end" icon="mdi:swap-horizontal"></ha-icon>
         </ha-button>
+        ` : ''}
         </div>
       </div>
 
@@ -108,6 +110,7 @@ export class SchedulerMainPanel extends LitElement {
             @value-changed=${this._startTimeChanged}
             ?useAmPm=${useAmPm(this.hass.locale)}
             .stepSize=${this.config.time_step || DEFAULT_TIME_STEP}
+            ?disableSunriseSunset=${this.config.disable_sunrise_sunset}
             large
           >
           </scheduler-time-picker>

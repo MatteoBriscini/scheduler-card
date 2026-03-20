@@ -49,6 +49,8 @@ export class SchedulerTimePicker extends LitElement {
 
   @property({ attribute: false }) stepSize = 10;
 
+  @property({ type: Boolean }) disableSunriseSunset?: boolean;
+
   protected render(): TemplateResult {
     const _validateHourInput = (value: any, _nativeValidity: any) => {
       let valid = value.match(/^[1|2]?[0-9]$/) !== null;
@@ -164,6 +166,7 @@ export class SchedulerTimePicker extends LitElement {
 
   _renderTimeMode() {
     if (!this.hass.states['sun.sun']) return nothing;
+    if (this.disableSunriseSunset) return nothing;
 
     if (this.large) {
       const _toggleTimeMode = () => {
