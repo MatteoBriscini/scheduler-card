@@ -235,6 +235,18 @@
             "heading": "Schakelknoppen weergeven",
             "description": "Schakelknop weergeven voor elk individueel schema in de kaart"
           },
+          "disable_mode_switch": {
+            "heading": "Disable mode switch",
+            "description": "Hide the button to switch between single and scheme mode"
+          },
+          "disable_options": {
+            "heading": "Disable options",
+            "description": "Hide the options button in the scheduler editor"
+          },
+          "disable_sunrise_sunset": {
+            "heading": "Disable sunrise/sunset",
+            "description": "Hide sunrise/sunset options in time picker"
+          },
           "tags": {
             "heading": "Tags",
             "description": "Tags kunnen gebruikt worden om schema's te verdelen over meerdere kaarten"

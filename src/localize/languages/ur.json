@@ -235,6 +235,18 @@
             "heading": "ٹوگل سوئچز دکھائیں",
             "description": "کارڈ میں ہر انفرادی شیڈول کے لیے ٹوگل سوئچ دکھائیں"
           },
+          "disable_mode_switch": {
+            "heading": "Disable mode switch",
+            "description": "Hide the button to switch between single and scheme mode"
+          },
+          "disable_options": {
+            "heading": "Disable options",
+            "description": "Hide the options button in the scheduler editor"
+          },
+          "disable_sunrise_sunset": {
+            "heading": "Disable sunrise/sunset",
+            "description": "Hide sunrise/sunset options in time picker"
+          },
           "tags": {
             "heading": "ٹیگز",
             "description": "شیڈولز کو مختلف کارڈز میں تقسیم کرنے کے لیے ٹیگز استعمال کریں"
