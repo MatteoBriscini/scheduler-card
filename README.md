@@ -295,11 +295,16 @@ Configuration is not *necessary*, except for defining a set of entities which yo
 | `include`                | list           | none                        | List of filters to determine which HA entities are available for creating schedules.<br> See [include](#include) for more info.                                                                                                                                                                               |
 | `exclude`                | list           | none                        | List of filters to determine which HA entities are **not** available for creating schedules.<br> See [exclude](#exclude) for more info.                                                                                                                                                                       |
 | `customize`              | dictionary     | none                        | Customize the available actions or visualization of entities.   <br>See [customize](#customize) for more info.                                                                                                                                                                                                |
+| `default_entity`  | number/string | none | Preselect an entity when creating a schedule. See [Default entity and actions](#default-entity-and-actions)  for more info.  |
+| `default_actions` | dictionary    | none | Define default actions per domain. See [Default entity and actions](#default-entity-and-actions)  for more info.  |
 | `title`                  | boolean/string | *true*                      | Provide a text to replace the title of the card.<br> Set to `false` to hide the title.                                                                                                                                                                                                                        |
 | `time_step`              | number         | 10                          | Set the time step (in minutes) for the time picker                                                                                                                                                                                                                                                            |
 | `sort_by`                | string/list    | `relative-time`,<br>`state` | Order in which schedules appear in the list. Choose from:<ul> <li>`relative-time`: duration until next task</li><li>`title`: displayed [primary info](#primary-info)</li><li>`state`: enabled/disabled status</ul>Note that `state` currently is the only option which can be combined with a second option.. |
 | `show_header_toggle`     | boolean        | *false*                     | Show a switch at the top of the card that can be used to enable/disable the complete list.                                                                                                                                                                                                                    |
 | `show_add_button`        | boolean        | *true*                      | Show button for creating new schedules.                                                                                                                                                                                                                                                                       |
+| `disable_mode_switch`        | boolean        | *false*                      | Disable the button for switching schedule modes in the editor dialog.                                                                                                                                                                                                                                                                       |
+| `disable_sunrise_sunset`        | boolean        | *false*                      | Disable the sunrise/sunrise button in the editor dialog.                                                                                                                                                                                                                                                                 |
+| `disable_options`        | boolean        | *false*                      | Disable the options button in the editor dialog.                                                                                                                                                                                                                                                                    |
 | `display_options`        | dictionary     | none                        | Configure which properties are displayed in the overview.<br>See [display options](#display-options) for more info.                                                                                                                                                                                           |
 | `tags`                   | string/list    | none                        | Filter schedules on one or more tags.<br>See [tags](#tags) for more info.                                                                                                                                                                                                                                     |
 | `exclude_tags`           | string/list    | none                        | Eliminate items from the schedules filtered by `tags`.<br>See [tags](#tags) for more info.                                                                                                                                                                                                                    |
@@ -437,6 +442,9 @@ Actions are compared based on matching `service` and `service_data` (note that v
 
 :warning: **Note**: If a match is found, your action will *replace* (and not *modify*) the default action.<br>This means that you are expected to (re-)define name, icon, and variable configuration.
 
+
+
+
 #### Numeric action variable
 
 Some devices allow to operate on a variable working point. For example lights can be dimmed with a `brightness`, fans can spin at a `speed` etc.
@@ -520,7 +528,26 @@ Now the list of options become visible when you set up the action:
 
 ![action variable example](https://github.com/nielsfaber/scheduler-card/blob/main/screenshots/action_variable_list_example.png?raw=true)
 
+#### Script fields support
 
+If a script defines input fields, these will automatically be detected and shown in the UI when creating a schedule. This allows you to provide the required parameters directly when configuring the action.
+
+Alternatively, you can predefine some or all of these fields in the card configuration using `customize`.
+
+<u>Example:</u>
+
+```yaml
+customize:
+  script.reminder:
+    service_data:
+      entity: media_player.your_device
+      message: test
+```
+When fields are defined in `service_data`:
+- They will be automatically applied when the action is executed
+- They will not be requested or editable in the UI
+
+:warning: **Note:** If only a subset of fields is defined in service_data, the remaining fields will still be shown in the UI and must be provided there.
 #### Conditions
 
 If you want to use a specific entity as a condition in a schedule, this can be configured by defining it in `customize` as well.
@@ -546,8 +573,34 @@ customize:
   sensor.my_other_condition_entity:
     states: {min: 0, max: 100, step: 1, unit: '%'}
 ```
+### Default entity and actions
+The `default_actions` option allows you to define a set of default actions for specific entity domains. When creating a new schedule, if an entity belonging to one of these domains is selected, the corresponding action will be automatically preselected. <br>
+The default action can be specified in two ways:
+- By **name** (e.g., `turn_on`)
+- By **number**, representing the position of the action in the list (zero-based index)
 
+```yaml
+default_actions:
+  script: 0 #script.turn_on
+  light: turn_on
+  climate: 4 #climate.set_hvac_mode
+```
+:warning: **Note**: The value associated with each domain depends on the type of actions supported by that domain.
+:warning: **Note**: If an entity domain has only one available action, it will automatically be used as the default action.
 
+The `default_entity` option allows you to define a preselected entity when creating a new schedule. Its behavior is similar to `default_actions`, and it is designed to work in combination with it to further streamline the scheduling workflow.
+The default entity can be specified in two ways:
+- By **entity_id** (e.g., `light.my_light`)
+- By **number**, representing the position of the entity in the list (zero-based)
+
+```yaml
+default_entity: 4
+```
+
+:warning: **Requirements**:
+The `default_entity` option is applied only if both of the following conditions are satisfied:
+1. The entity is explicitly included using the `include` configuration, see [Include](#include) for more info.
+2. A corresponding default action exists for the entity’s domain (defined via `default_actions`)
 ### Display options
 From v1.9.0, it is possible to configure what is displayed in the overview list.
 By default, the card will display the entity + action on the first line, and on the second line the remaining time until the schedule will be triggered. For timeslots, there will be a display of the extra actions.
