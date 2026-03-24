@@ -215,10 +215,10 @@ export class SchedulerMainPanel extends LitElement {
       </div>
     `;
 
-    const config = actionConfig(action, this.config.customize);
+    const config = actionConfig(action, this.hass, this.config.customize);
     const domain = config.target?.domain || computeDomain(action.service);
 
-    const hasFixedEntity = isDefined(config?.target?.entity_id) || this.schedule.entries[this.selectedEntry!].slots.some(e => e.actions.length && isDefined(actionConfig(e.actions[0], this.config.customize)?.target?.entity_id));
+    const hasFixedEntity = isDefined(config?.target?.entity_id) || this.schedule.entries[this.selectedEntry!].slots.some(e => e.actions.length && isDefined(actionConfig(e.actions[0], this.hass, this.config.customize)?.target?.entity_id));
 
     if (config === undefined) return html``;
 
@@ -242,7 +242,7 @@ export class SchedulerMainPanel extends LitElement {
         ?disabled=${true}
       >
         <div slot="header" class="header">
-          <ha-icon slot="icon" icon="${computeActionIcon(action, this.config.customize)}"></ha-icon>
+          <ha-icon slot="icon" icon="${computeActionIcon(action, this.hass, this.config.customize)}"></ha-icon>
           <span>${capitalizeFirstLetter(heading)}</span>
         </div>
 
@@ -285,7 +285,7 @@ export class SchedulerMainPanel extends LitElement {
         : ''}
 
           ${fields.map(field => {
-          const selector = selectorConfig(action.service, action.target?.entity_id, field, this.hass!, this.config.customize);
+          const selector = selectorConfig(action, field, this.hass!, this.config.customize);
           if (selector === null) return '';
           let optional: boolean | undefined = config.fields![field].optional || ((selector as NumberSelector).number || {}).optional;
           const checked = optional ? Object.keys(action.service_data).includes(field) : true;

@@ -1,6 +1,6 @@
 import { mdiArrowLeft, mdiClose, mdiCogOutline } from "@mdi/js";
 import { LitElement, PropertyValues, html } from "lit";
-import { customElement, property, state } from "lit/decorators";
+import { customElement, property, state } from "lit/decorators.js";
 import { Action, CardConfig, EditorMode, Schedule, ScheduleEntry } from "../types";
 import { EditorDialogStyles } from "../card.styles";
 import { localize } from "../localize/localize";
@@ -18,8 +18,10 @@ import { parseTimeBar } from "../data/time/parse_time_bar";
 import { hassLocalize } from "../localize/hassLocalize";
 import { convertSchemeToSingle } from "../data/schedule/convert_scheme_to_single";
 import { isDefined } from "../lib/is_defined";
+import { computeDomain } from "../lib/entity";
 
 import './scheduler-main-panel';
+import { actionConfig } from "../data/actions/action_config";
 import './scheduler-options-panel';
 import './generic-dialog';
 import { defaultSingleTimerConfig, defaultTimeSchemeConfig } from "../const";
@@ -106,12 +108,26 @@ export class DialogSchedulerEditor extends LitElement {
       }
     }
     if (entityId && this.schedule && this.schedule.entries && !this.schedule.entries.some(e => e.slots.some(s => s.actions.length))) {
+      const domain = computeDomain(entityId);
+      let defaultAction: Action | undefined;
 
-      let defaultAction = getDefaultActionForEntity(entityId, defaultActions);
+      if (domain === 'script') {
+        let service_data = {};
+        if (cardConfig.customize && cardConfig.customize[entityId] && cardConfig.customize[entityId].service_data) {
+          service_data = { ...cardConfig.customize[entityId].service_data };
+        }
+        // For scripts, the default_entity (which is a specific script) takes precedence
+        // over the generic default_action for the script domain.
+        defaultAction = {
+          service: entityId,
+          service_data: service_data,
+        };
+      } else {
+        defaultAction = getDefaultActionForEntity(entityId, defaultActions);
+      }
 
       // If no default action found for the entity, but there is a single action for the domain, use that
       if (!defaultAction) {
-        const domain = entityId.split(".")[0];
         const actions = computeActionsForDomain(this.hass, domain, cardConfig);
         if (actions.length === 1) {
           defaultAction = actions[0].action;
@@ -121,10 +137,13 @@ export class DialogSchedulerEditor extends LitElement {
       // If we have a default action, preselect it for the first slot of the schedule
       if (defaultAction && this._viewMode === EditorMode.Single) {
         let actionToSet = { ...defaultAction };
+        const config = actionConfig(actionToSet, this.hass, cardConfig.customize);
+        if (config.target) {
           actionToSet = {
-          ...actionToSet,
-          target: { ...(actionToSet.target ?? {}), entity_id: entityId },
-        };
+            ...actionToSet,
+            target: { ...(actionToSet.target ?? {}), entity_id: entityId },
+          };
+        }
 
         this.schedule = {
           ...this.schedule,
