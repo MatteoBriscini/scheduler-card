@@ -127,6 +127,39 @@ export class SchedulerCardEditor extends LitElement {
         </div>
         </div>
 
+        <div class="two-columns" style="margin: 10px 0px 15px 0px">
+          <div class="column">
+            <ha-formfield label="${localize('ui.panel.card_editor.fields.disable_mode_switch.heading', this.hass)}">
+              <ha-switch
+                ?checked=${this._config.disable_mode_switch}
+                @change=${(ev: Event) => {
+                  this._updateConfig({ disable_mode_switch: (ev.target as HTMLInputElement).checked });
+                }}
+              ></ha-switch>
+            </ha-formfield>
+          </div>
+          <div class="column">
+            <ha-formfield label="${localize('ui.panel.card_editor.fields.disable_options.heading', this.hass)}">
+              <ha-switch
+                ?checked=${this._config.disable_options}
+                @change=${(ev: Event) => {
+                  this._updateConfig({ disable_options: (ev.target as HTMLInputElement).checked });
+                }}
+              ></ha-switch>
+            </ha-formfield>
+          </div>
+          <div class="column">
+            <ha-formfield label="${localize('ui.panel.card_editor.fields.disable_sunrise_sunset.heading', this.hass)}">
+              <ha-switch
+                ?checked=${this._config.disable_sunrise_sunset}
+                @change=${(ev: Event) => {
+                  this._updateConfig({ disable_sunrise_sunset: (ev.target as HTMLInputElement).checked });
+                }}
+              ></ha-switch>
+            </ha-formfield>
+          </div>
+        </div>
+
         <scheduler-settings-row>
           <span slot="heading">${localize('ui.panel.card_editor.fields.time_step.heading', this.hass)}</span>
 

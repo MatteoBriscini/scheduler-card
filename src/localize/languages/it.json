@@ -135,8 +135,8 @@
         "action": "Azione",
         "add_action": "Aggiungi azione",
         "select_timeslot": "Seleziona una fascia oraria",
-        "toggle_single_mode": "Alla modo semplice",
-        "toggle_scheme_mode": "Alla modo schema",
+        "toggle_single_mode": "Alla modalità semplice",
+        "toggle_scheme_mode": "Alla modalità schema",
         "validation_errors": {
           "overlapping_time": "Il programma ha fasce orarie sovrapposte",
           "missing_target_entity": "Una o più azioni mancano di un'entità target",
@@ -234,6 +234,18 @@
           "show_toggle_switches": {
             "heading": "Show toggle switches",
             "description": "Show toggle switch for each individual schedule in the card"
+          },
+          "disable_mode_switch": {
+            "heading": "Disable mode switch",
+            "description": "Hide the button to switch between single and scheme mode"
+          },
+          "disable_options": {
+            "heading": "Disable options",
+            "description": "Hide the options button in the scheduler editor"
+          },
+          "disable_sunrise_sunset": {
+            "heading": "Disable sunrise/sunset",
+            "description": "Hide sunrise/sunset options in time picker"
           },
           "tags": {
             "heading": "Tags",

@@ -235,6 +235,18 @@
             "heading": "Εμφάνιση διακοπτών εναλλαγής",
             "description": "Εμφάνιση διακόπτη εναλλαγής για κάθε μεμονωμένο πρόγραμμα στην κάρτα"
           },
+          "disable_mode_switch": {
+            "heading": "Disable mode switch",
+            "description": "Hide the button to switch between single and scheme mode"
+          },
+          "disable_options": {
+            "heading": "Disable options",
+            "description": "Hide the options button in the scheduler editor"
+          },
+          "disable_sunrise_sunset": {
+            "heading": "Disable sunrise/sunset",
+            "description": "Hide sunrise/sunset options in time picker"
+          },
           "tags": {
             "heading": "Ετικέτες",
             "description": "Χρησιμοποιήστε ετικέτες για να χωρίσετε τα προγράμματα μεταξύ πολλών καρτών"

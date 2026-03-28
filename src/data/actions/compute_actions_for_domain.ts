@@ -13,6 +13,7 @@ import { defaultSelectorValue } from "../selectors/default_selector_value";
 import { isDefined } from "../../lib/is_defined";
 import { entityConfig } from "./compute_action_domains";
 import { matchPattern } from "../../lib/patterns";
+import type { CustomConfig } from '../../types';
 import { entityIncludedByConfig } from "./entity_included_by_config";
 
 export interface actionItem {

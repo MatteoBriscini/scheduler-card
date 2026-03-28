@@ -19,6 +19,12 @@ export interface CardConfig {
   tags?: string[] | string;
   exclude_tags?: string[] | string;
   show_add_button?: boolean;
+
+  disable_mode_switch?: boolean;
+  disable_options?: boolean;
+  disable_sunrise_sunset?: boolean;
+  default_entity?: string | number; 
+  default_actions?: Record<string, string | number>;
 }
 
 export enum EditorMode {

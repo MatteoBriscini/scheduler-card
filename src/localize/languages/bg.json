@@ -235,6 +235,18 @@
             "heading": "Покажи превключватели",
             "description": "Покажи превключвател за всяко отделно задание в картата"
           },
+          "disable_mode_switch": {
+            "heading": "Disable mode switch",
+            "description": "Hide the button to switch between single and scheme mode"
+          },
+          "disable_options": {
+            "heading": "Disable options",
+            "description": "Hide the options button in the scheduler editor"
+          },
+          "disable_sunrise_sunset": {
+            "heading": "Disable sunrise/sunset",
+            "description": "Hide sunrise/sunset options in time picker"
+          },
           "tags": {
             "heading": "Етикети",
             "description": "Използвайте етикети за разделяне на графиците между множество карти"

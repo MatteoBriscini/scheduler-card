@@ -7,17 +7,21 @@ import { sortByName } from '../lib/sort';
 import { styleMap } from 'lit/directives/style-map';
 import { localize } from '../localize/localize';
 import { HomeAssistant } from '../lib/types';
-import { Action, CardConfig } from '../types';
+import { Action, CardConfig, EditorMode } from '../types';
 import { hassLocalize } from '../localize/hassLocalize';
 import { actionConfig } from '../data/actions/action_config';
 import { isDefined } from '../lib/is_defined';
+import { computeDomain } from '../lib/entity';
 
 export type DialogSelectActionParams = {
   cancel: () => void;
   confirm: (res: Action) => void;
   domainFilter?: string[];
   entityFilter?: string[];
-  cardConfig: CardConfig
+  cardConfig: CardConfig;
+  defaultActionsByDomain?: Record<string, Action>;
+  viewMode: EditorMode;
+  isEditing?: boolean;
 };
 
 @customElement('dialog-select-action')
@@ -40,6 +44,15 @@ export class DialogSelectAction extends LitElement {
     this._params = params;
     this.lockDomain = params.domainFilter !== undefined;
     this.showAll = false;
+
+    const domainFromFilter = params.domainFilter?.length === 1 ? params.domainFilter[0] : undefined;
+    const domainFromEntity = params.entityFilter?.length === 1 ? computeDomain(params.entityFilter[0]) : undefined;
+    const domain = domainFromFilter || domainFromEntity;
+
+    if (this._tryApplyDefaultAction(domain)) {
+      return;
+    }
+
     await this.updateComplete;
   }
 
@@ -269,8 +282,36 @@ export class DialogSelectAction extends LitElement {
   }
 
   _handleDomainClick(key: string) {
+    if (this._tryApplyDefaultAction(key)) {
+      return;
+    }
     this._params = { ...this._params!, domainFilter: [key] };
     this._clearSearch();
+  }
+
+
+  private _tryApplyDefaultAction(domain: string | undefined): boolean {
+    if (this._params?.isEditing || !domain || this._params?.viewMode !== EditorMode.Single) return false;
+
+    // If there's a default action for this domain, apply it directly
+    const defaultAction = this._params?.defaultActionsByDomain?.[domain];
+    if (defaultAction) {
+      this._params!.confirm(defaultAction);
+      this._params = undefined;
+      this._clearSearch();
+      return true;
+    }
+
+    // If no default action, check if there's only one available action for this domain and apply it
+    const actions = computeActionsForDomain(this.hass, domain, this._params!.cardConfig);
+    if (actions.length === 1) {
+      this._params!.confirm(actions[0].action);
+      this._params = undefined;
+      this._clearSearch();
+      return true;
+    }
+
+    return false;
   }
 
   _clearDomain() {
